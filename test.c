@@ -78,17 +78,11 @@ void addRows(float matrix[MATRIX_SIZE][MATRIX_SIZE], int srcRow, int destRow, fl
 }
 
 void invertMatrix(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[MATRIX_SIZE][MATRIX_SIZE]) {
-    // Initialize the inverse matrix as the identity matrix
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        for (int j = 0; j < MATRIX_SIZE; j++) {
-            inverse[i][j] = (i == j) ? 1.0 : 0.0;
-        }
-    }
 
-    // Apply Gauss-Jordan elimination
     for (int i = 0; i < MATRIX_SIZE; i++) {
         // If the pivot element is zero, swap rows
-        if (matrix[i][i] == 0) {
+        float pivot = matrix[i][i];
+        if (pivot == 0) {
             int j;
             for (j = i + 1; j < MATRIX_SIZE; j++) {
                 if (matrix[j][i] != 0) {
@@ -104,7 +98,6 @@ void invertMatrix(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[MATRIX_S
         }
 
         // Scale the pivot row
-        float pivot = matrix[i][i];
         scaleRow(matrix, i, 1.0 / pivot);
         scaleRow(inverse, i, 1.0 / pivot);
 
