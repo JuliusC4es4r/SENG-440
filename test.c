@@ -27,6 +27,26 @@ float well_conditioned_inversion_result[MATRIX_SIZE][MATRIX_SIZE] =
     {0, 0, 0, 0, 0, 1},
 };
 
+float m_well[MATRIX_SIZE][MATRIX_SIZE] = 
+{
+    {5, 2, 1, 1, 2, 1},
+    {5, 1, 7, 1, 1, 3},
+    {7, 1, 7, 9, 1, 2},
+    {1, 1, 5, 3, 3, 5},
+    {1, 2, 5, 2, 2, 1},
+    {1, 9, 0, 5, 1, 7}
+};
+
+float m_well_result[MATRIX_SIZE][MATRIX_SIZE] = 
+{
+    {1, 0, 0, 0, 0, 0},
+    {0, 1, 0, 0, 0, 0},
+    {0, 0, 1, 0, 0, 0},
+    {0, 0, 0, 1, 0, 0},
+    {0, 0, 0, 0, 1, 0},
+    {0, 0, 0, 0, 0, 1},
+};
+
 //the ill-conditioned matrix to be inverted
 float ill_conditioned_matrix[MATRIX_SIZE][MATRIX_SIZE] = 
 {
@@ -139,15 +159,15 @@ int scale_matrix(float inverted_matrix[MATRIX_SIZE][MATRIX_SIZE], int scale_fact
     }
 }
 
-int approximate_norm(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
+float approximate_norm(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
     //Goal: estimate the condition number without calculating the norm
     //Approximate the matrix norm by find the maximum absolute row sum
 
     printMatrix(matrix);
 
-    int norm = 0;
+    float norm = 0;
     for(int i = 0; i < MATRIX_SIZE; i++){
-        int row_sum = 0;
+        float row_sum = 0;
         for(int j = 0; j < MATRIX_SIZE; j++){
             if(matrix[i][j] < 0){
                 //Multiply index by -1 if negative
@@ -161,27 +181,43 @@ int approximate_norm(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
     return norm;
 }
 
-int compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
+int compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[MATRIX_SIZE][MATRIX_SIZE]){
     //Goal: estimate the condition number without calculating the norm
     //Approximate the matrix norm by find the maximum absolute row sum
+    float norm = approximate_norm(matrix);
+    printf("Norm is:%f\n", norm);
 
-    int norm = approximate_norm(matrix);
-    printf("Norm is:%d\n", norm);
+    invertMatrix(matrix, inverse);
+
+
+    float inverse_norm = approximate_norm(inverse);
+    printf("Inverse norm is:%f\n", inverse_norm);
+
+    float condition_num = norm*inverse_norm;
+    printf("Condition Number: %f\n", condition_num);
 
     //perturb the matrix by 25
-    float perturbed[MATRIX_SIZE][MATRIX_SIZE];
-    for(int i = 0; i < MATRIX_SIZE; i++){
-        for(int j = 0; j < MATRIX_SIZE; j++){
-            perturbed[i][j] = matrix[i][j]+25;
-        }
-    }
-    int perturbed_norm = approximate_norm(perturbed);
-    printf("Per norm:%d\n", perturbed_norm);
+    // float perturbed[MATRIX_SIZE][MATRIX_SIZE];
+    // for(int i = 0; i < MATRIX_SIZE; i++){
+    //     for(int j = 0; j < MATRIX_SIZE; j++){
+    //         perturbed[i][j] = matrix[i][j]+25;
+    //     }
+    // }
+    // int perturbed_norm = approximate_norm(perturbed);
+    // printf("Per norm:%d\n", perturbed_norm);
+
+    // int condition_num = perturbed_norm/(perturbed_norm/norm);
+
+    //printf("Condition Number: %d\n", condition_num);
 }
 
 int main() {
 
-    compute_condition_num(well_conditioned_matrix);
+    printf("Condition number of well condition matrix:\n");
+    compute_condition_num(well_conditioned_matrix, well_conditioned_inversion_result);
+
+    printf("Condition number of m_well:\n");
+    compute_condition_num(m_well, m_well_result);
 
     // printf("Original Matrix:\n");
     // printMatrix(well_conditioned_matrix);
