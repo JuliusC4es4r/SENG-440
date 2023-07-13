@@ -47,6 +47,26 @@ float m_well_result[MATRIX_SIZE][MATRIX_SIZE] =
     {0, 0, 0, 0, 0, 1},
 };
 
+float m_ill[MATRIX_SIZE][MATRIX_SIZE] = 
+{
+    {5, 5, 1, 1, 2, 1},
+    {5, 1, 14, 1, 1, 7},
+    {7, 8, 7, 9, 1, 2},
+    {1, 1, 5, 3, 3, 5},
+    {20, 2, 5, 2, 5, 1},
+    {1, 9, 7, 5, 1, 7},
+};
+
+float m_ill_result[MATRIX_SIZE][MATRIX_SIZE] = 
+{
+    {1, 0, 0, 0, 0, 0},
+    {0, 1, 0, 0, 0, 0},
+    {0, 0, 1, 0, 0, 0},
+    {0, 0, 0, 1, 0, 0},
+    {0, 0, 0, 0, 1, 0},
+    {0, 0, 0, 0, 0, 1},
+};
+
 //the ill-conditioned matrix to be inverted
 float ill_conditioned_matrix[MATRIX_SIZE][MATRIX_SIZE] = 
 {
@@ -72,7 +92,7 @@ float ill_conditioned_inversion_result[MATRIX_SIZE][MATRIX_SIZE] =
 void printMatrix(float matrix[MATRIX_SIZE][MATRIX_SIZE]) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
-            printf("%.4f\t", matrix[i][j]);
+            printf("%.8f\t", matrix[i][j]);
         }
         printf("\n");
     }
@@ -133,10 +153,9 @@ void invertMatrix(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[MATRIX_S
     }
 }
 
-int scale_num_calculation(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
-    printMatrix(matrix);
-    int scale_factor = 0;
-    int max = 0;
+float scale_factor_calculation(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
+    float scale_factor = 0;
+    float max = 0;
 
     //Loop through matrix to find the maximum element
     for(int i = 0; i < MATRIX_SIZE; i++){
@@ -144,13 +163,12 @@ int scale_num_calculation(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
             if (matrix[i][j] > max) max = matrix[i][j];
         }
     }
-    printf("max: %d\n", max);
     if(max > 0) scale_factor = MAX_SCALER/max;
 
     return scale_factor;
 }
 
-int scale_matrix(float inverted_matrix[MATRIX_SIZE][MATRIX_SIZE], int scale_factor){
+float scale_matrix(float inverted_matrix[MATRIX_SIZE][MATRIX_SIZE], int scale_factor){
     //Scale each element in the matrix
     for(int i = 0; i < MATRIX_SIZE; i++){
         for(int j = 0; j < MATRIX_SIZE; j++){
@@ -162,8 +180,6 @@ int scale_matrix(float inverted_matrix[MATRIX_SIZE][MATRIX_SIZE], int scale_fact
 float approximate_norm(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
     //Goal: estimate the condition number without calculating the norm
     //Approximate the matrix norm by find the maximum absolute row sum
-
-    printMatrix(matrix);
 
     float norm = 0;
     for(int i = 0; i < MATRIX_SIZE; i++){
@@ -181,7 +197,7 @@ float approximate_norm(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
     return norm;
 }
 
-int compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[MATRIX_SIZE][MATRIX_SIZE]){
+float compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[MATRIX_SIZE][MATRIX_SIZE]){
     //Goal: estimate the condition number without calculating the norm
     //Approximate the matrix norm by find the maximum absolute row sum
     float norm = approximate_norm(matrix);
@@ -194,45 +210,27 @@ int compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[
     printf("Inverse norm is:%f\n", inverse_norm);
 
     float condition_num = norm*inverse_norm;
-    printf("Condition Number: %f\n", condition_num);
-
-    //perturb the matrix by 25
-    // float perturbed[MATRIX_SIZE][MATRIX_SIZE];
-    // for(int i = 0; i < MATRIX_SIZE; i++){
-    //     for(int j = 0; j < MATRIX_SIZE; j++){
-    //         perturbed[i][j] = matrix[i][j]+25;
-    //     }
-    // }
-    // int perturbed_norm = approximate_norm(perturbed);
-    // printf("Per norm:%d\n", perturbed_norm);
-
-    // int condition_num = perturbed_norm/(perturbed_norm/norm);
-
-    //printf("Condition Number: %d\n", condition_num);
+    
+    return condition_num;
 }
 
 int main() {
 
-    printf("Condition number of well condition matrix:\n");
-    compute_condition_num(well_conditioned_matrix, well_conditioned_inversion_result);
+    printMatrix(m_well);
+    float scale_factor = scale_factor_calculation(m_well);
+    printf("Scale factor: %f\n", scale_factor);
+    scale_matrix(m_well, scale_factor);
+    float condition_number = compute_condition_num(m_well, m_well_result);
+    printf("Condition Number: %.8f\n", condition_number);
+    printMatrix(m_well_result);
 
-    printf("Condition number of m_well:\n");
-    compute_condition_num(m_well, m_well_result);
-
-    // printf("Original Matrix:\n");
-    // printMatrix(well_conditioned_matrix);
-
-    // invertMatrix(well_conditioned_matrix, well_conditioned_inversion_result);
-
-    // printf("Inverted Matrix:\n");
-    // printMatrix(well_conditioned_inversion_result);
-
-    // int scale = scale_num_calculation(well_conditioned_matrix);
-    // printf("Scale Number: %d\n", scale);
-
-    // scale_matrix(well_conditioned_inversion_result, scale);
-    // printf("Scaled inverse matrix:\n");
-    // printMatrix(well_conditioned_inversion_result);
+    printMatrix(m_ill);
+    float scale_factor_ill = scale_factor_calculation(m_ill);
+    printf("Scale factor: %f\n", scale_factor_ill);
+    scale_matrix(m_ill, scale_factor_ill);
+    float condition_number_ill = compute_condition_num(m_ill, m_ill_result);
+    printf("Condition Number: %.8f\n", condition_number_ill);
+    printMatrix(m_ill_result);
 
     return 0;
 }
