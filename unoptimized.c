@@ -90,26 +90,6 @@ float ill_conditioned_inversion_result[MATRIX_SIZE][MATRIX_SIZE] =
     {0, 0, 0, 0, 0, 1},
 };
 
-float vv_ill[MATRIX_SIZE][MATRIX_SIZE] = 
-{
-    {1, 2, 1, 1, 2, 1},
-    {2, 4, 2, 2, 4, 2},
-    {1, 2, 1, 1, 2, 1},
-    {1, 2, 1, 1, 2, 1},
-    {2, 4, 2, 2, 4, 2},
-    {1, 2, 1, 1, 2, 1},
-};
-
-float vv_ill_result[MATRIX_SIZE][MATRIX_SIZE] = 
-{
-    {1, 0, 0, 0, 0, 0},
-    {0, 1, 0, 0, 0, 0},
-    {0, 0, 1, 0, 0, 0},
-    {0, 0, 0, 1, 0, 0},
-    {0, 0, 0, 0, 1, 0},
-    {0, 0, 0, 0, 0, 1},
-};
-
 void printMatrix(float matrix[MATRIX_SIZE][MATRIX_SIZE]) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
@@ -226,6 +206,7 @@ float compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float invers
 
     invertMatrix(matrix, inverse);
 
+
     float inverse_norm = approximate_norm(inverse);
     printf("Inverse norm is:%f\n", inverse_norm);
 
@@ -236,20 +217,20 @@ float compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float invers
 
 int start_process(){
     printMatrix(m_well);
-    float condition_number = compute_condition_num(m_well, m_well_result);
-    printf("Condition Number: %.8f\n", condition_number);
     float scale_factor = scale_factor_calculation(m_well);
     printf("Scale factor: %f\n", scale_factor);
+    float condition_number = compute_condition_num(m_well, m_well_result);
+    printf("Condition Number: %.8f\n", condition_number);
     scale_matrix(m_well, scale_factor);
     printMatrix(m_well_result);
 
-    printf("\n***************************************************\n");
+    //printf("\n***************************************************\n");
 
-    printMatrix(vv_ill);
-    float condition_number_ill = compute_condition_num(m_ill, m_ill_result);
-    printf("Condition Number: %.8f\n", condition_number_ill);
+    printMatrix(m_ill);
     float scale_factor_ill = scale_factor_calculation(m_ill);
     printf("Scale factor: %f\n", scale_factor_ill);
+    float condition_number_ill = compute_condition_num(m_ill, m_ill_result);
+    printf("Condition Number: %.8f\n", condition_number_ill);
     scale_matrix(m_ill, scale_factor_ill);
     printMatrix(m_ill_result);
     
