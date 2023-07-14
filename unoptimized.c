@@ -90,6 +90,26 @@ float ill_conditioned_inversion_result[MATRIX_SIZE][MATRIX_SIZE] =
     {0, 0, 0, 0, 0, 1},
 };
 
+float vv_ill[MATRIX_SIZE][MATRIX_SIZE] = 
+{
+    {1, 2, 1, 1, 2, 1},
+    {2, 4, 2, 2, 4, 2},
+    {1, 2, 1, 1, 2, 1},
+    {1, 2, 1, 1, 2, 1},
+    {2, 4, 2, 2, 4, 2},
+    {1, 2, 1, 1, 2, 1},
+};
+
+float vv_ill_result[MATRIX_SIZE][MATRIX_SIZE] = 
+{
+    {1, 0, 0, 0, 0, 0},
+    {0, 1, 0, 0, 0, 0},
+    {0, 0, 1, 0, 0, 0},
+    {0, 0, 0, 1, 0, 0},
+    {0, 0, 0, 0, 1, 0},
+    {0, 0, 0, 0, 0, 1},
+};
+
 void printMatrix(float matrix[MATRIX_SIZE][MATRIX_SIZE]) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
@@ -202,13 +222,12 @@ float compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float invers
     //Goal: estimate the condition number without calculating the norm
     //Approximate the matrix norm by find the maximum absolute row sum
     float norm = approximate_norm(matrix);
-    //printf("Norm is:%f\n", norm);
+    printf("Norm is:%f\n", norm);
 
     invertMatrix(matrix, inverse);
 
-
     float inverse_norm = approximate_norm(inverse);
-    //printf("Inverse norm is:%f\n", inverse_norm);
+    printf("Inverse norm is:%f\n", inverse_norm);
 
     float condition_num = norm*inverse_norm;
     
@@ -216,51 +235,53 @@ float compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float invers
 }
 
 int start_process(){
-    //printMatrix(m_well);
-    float scale_factor = scale_factor_calculation(m_well);
-    //printf("Scale factor: %f\n", scale_factor);
-    scale_matrix(m_well, scale_factor);
+    printMatrix(m_well);
     float condition_number = compute_condition_num(m_well, m_well_result);
-    //printf("Condition Number: %.8f\n", condition_number);
-    //printMatrix(m_well_result);
+    printf("Condition Number: %.8f\n", condition_number);
+    float scale_factor = scale_factor_calculation(m_well);
+    printf("Scale factor: %f\n", scale_factor);
+    scale_matrix(m_well, scale_factor);
+    printMatrix(m_well_result);
 
-    //printf("\n***************************************************\n");
+    printf("\n***************************************************\n");
 
-    //printMatrix(m_ill);
-    float scale_factor_ill = scale_factor_calculation(m_ill);
-    //printf("Scale factor: %f\n", scale_factor_ill);
-    scale_matrix(m_ill, scale_factor_ill);
+    printMatrix(vv_ill);
     float condition_number_ill = compute_condition_num(m_ill, m_ill_result);
-    //printf("Condition Number: %.8f\n", condition_number_ill);
-    //printMatrix(m_ill_result);
+    printf("Condition Number: %.8f\n", condition_number_ill);
+    float scale_factor_ill = scale_factor_calculation(m_ill);
+    printf("Scale factor: %f\n", scale_factor_ill);
+    scale_matrix(m_ill, scale_factor_ill);
+    printMatrix(m_ill_result);
     
     return 0;
 }
 
 int main() {
 
-    double runtime = 0;
+    start_process();
 
-    for(int i = 0; i < 100; i++){
+    // double runtime = 0;
 
-        struct timeval start, end;
-        double elapsed_time;
+    // for(int i = 0; i < 100; i++){
 
-        // Timing the runtime of your program
-        gettimeofday(&start, NULL);
+    //     struct timeval start, end;
+    //     double elapsed_time;
 
-        start_process(); // Call your program
+    //     // Timing the runtime of your program
+    //     gettimeofday(&start, NULL);
 
-        gettimeofday(&end, NULL);
-        elapsed_time = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);
+    //     start_process(); // Call your program
 
-        runtime+=elapsed_time;
+    //     gettimeofday(&end, NULL);
+    //     elapsed_time = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);
 
-        //printf("Runtime: %.2f microseconds\n", elapsed_time);
+    //     runtime+=elapsed_time;
 
-    }
+    //     //printf("Runtime: %.2f microseconds\n", elapsed_time);
 
-    printf("Run time avg: %.2f\n", runtime/100);
+    // }
+
+    // printf("Run time avg: %.2f\n", runtime/100);
 
     return 0;
 }
