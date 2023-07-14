@@ -52,9 +52,10 @@ m_well = [
     1, 2, 5, 2, 2, 1;
     1, 9, 0, 5, 1, 7;
 ];
->> cond_well = cond(m_well);
+// add matrix norms
+>> cond_well = cond(m_well, inf);
 >> disp("Condition number of c_well: " + cond_well);
-Condition number of c_well: 9.0428
+Condition number of c_well: 25.3967
  inv(m_well)
 
 ans =
@@ -75,9 +76,10 @@ m_ill = [
     20, 2, 5, 2, 5, 1;
     1, 9, 7, 5, 1, 7;
 ];
->> cond_ill = cond(m_ill);
+// add matrix norms
+>> cond_ill = cond(m_ill, inf);
 >> disp("Condition number of m_ill: " + cond_ill);
-Condition number of m_ill: 33.553
+Condition number of m_ill: 53.6316
  inv(m_ill)
 ans =
 
@@ -97,6 +99,7 @@ m_extremely_ill = [
     2,  4,  2,  2,  4,  2;
     1,  2,  1,  1,  2,  1;
 ];
+// add matrix norms
 >> cond_extremely_ill = cond(m_extremely_ill);
 >> disp("Condition number of c_extremely_ill: " + cond_extremely_ill);
 Condition number of c_extremely_ill: 2.502916758151575e+143
