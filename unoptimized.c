@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sys/time.h>
 
 #define MATRIX_SIZE 6
 #define MAX_SCALER 65536
@@ -201,36 +202,65 @@ float compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float invers
     //Goal: estimate the condition number without calculating the norm
     //Approximate the matrix norm by find the maximum absolute row sum
     float norm = approximate_norm(matrix);
-    printf("Norm is:%f\n", norm);
+    //printf("Norm is:%f\n", norm);
 
     invertMatrix(matrix, inverse);
 
 
     float inverse_norm = approximate_norm(inverse);
-    printf("Inverse norm is:%f\n", inverse_norm);
+    //printf("Inverse norm is:%f\n", inverse_norm);
 
     float condition_num = norm*inverse_norm;
     
     return condition_num;
 }
 
-int main() {
-
-    printMatrix(m_well);
+int start_process(){
+    //printMatrix(m_well);
     float scale_factor = scale_factor_calculation(m_well);
-    printf("Scale factor: %f\n", scale_factor);
+    //printf("Scale factor: %f\n", scale_factor);
     scale_matrix(m_well, scale_factor);
     float condition_number = compute_condition_num(m_well, m_well_result);
-    printf("Condition Number: %.8f\n", condition_number);
-    printMatrix(m_well_result);
+    //printf("Condition Number: %.8f\n", condition_number);
+    //printMatrix(m_well_result);
 
-    printMatrix(m_ill);
+    //printf("\n***************************************************\n");
+
+    //printMatrix(m_ill);
     float scale_factor_ill = scale_factor_calculation(m_ill);
-    printf("Scale factor: %f\n", scale_factor_ill);
+    //printf("Scale factor: %f\n", scale_factor_ill);
     scale_matrix(m_ill, scale_factor_ill);
     float condition_number_ill = compute_condition_num(m_ill, m_ill_result);
-    printf("Condition Number: %.8f\n", condition_number_ill);
-    printMatrix(m_ill_result);
+    //printf("Condition Number: %.8f\n", condition_number_ill);
+    //printMatrix(m_ill_result);
+    
+    return 0;
+}
+
+int main() {
+
+    double runtime = 0;
+
+    for(int i = 0; i < 100; i++){
+
+        struct timeval start, end;
+        double elapsed_time;
+
+        // Timing the runtime of your program
+        gettimeofday(&start, NULL);
+
+        start_process(); // Call your program
+
+        gettimeofday(&end, NULL);
+        elapsed_time = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);
+
+        runtime+=elapsed_time;
+
+        //printf("Runtime: %.2f microseconds\n", elapsed_time);
+
+    }
+
+    printf("Run time avg: %.2f\n", runtime/100);
 
     return 0;
 }
