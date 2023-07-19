@@ -34,32 +34,19 @@ void printMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE])
     {
         for (j = 0; j < MATRIX_SIZE; j++)
         {
-            printf("%d ", matrix[i][j]);
+            printf("%10d ", matrix[i][j]);
         }
         printf("\n");
     }
 }
 
-void printMatrixFloat(int matrix[MATRIX_SIZE][MATRIX_SIZE])
+void switchEquation(int rowTotal1, int rowTotal2)
 {
-    for (int i = 0; i < MATRIX_SIZE; i++)
+    for (int columnIndex = 0; columnIndex < (7); columnIndex++)
     {
-        for (int j = 0; j < MATRIX_SIZE; j++)
-        {
-            printf("%f ", (float)matrix[i][j]);
-        }
-        printf("\n");
-    }
-}
-
-void convertToFloat(int inverse[MATRIX_SIZE][MATRIX_SIZE], int scale_factor)
-{
-    for (int i = 0; i < MATRIX_SIZE; i++)
-    {
-        for (int j = 0; j < MATRIX_SIZE; j++)
-        {
-            inverse[i][j] = (inverse[i][j] * 1.0) / scale_factor;
-        }
+        float temp = matrix[rowTotal1][columnIndex];
+        matrix[rowTotal1][columnIndex] = matrix[rowTotal2][columnIndex];
+        matrix[rowTotal2][columnIndex] = temp;
     }
 }
 
@@ -96,13 +83,34 @@ void gaussJordan()
             }
         }
 
-        if (matrix[i][i] == 0)
+        // Step 2: Swap rows to make largest, leftmost nonzero entry on top
+        int maxIndex = i;
+        for (k = i + 1; k < MATRIX_SIZE; k++)
         {
-            // Matrix is not invertible
-            return;
+            if (matrix[k][i] > matrix[maxIndex][i])
+            {
+                maxIndex = k;
+            }
+        }
+        if (maxIndex != i)
+        {
+            // Swap rows in the matrix
+            for (j = 0; j < MATRIX_SIZE; j++)
+            {
+                temp = matrix[i][j];
+                matrix[i][j] = matrix[maxIndex][j];
+                matrix[maxIndex][j] = temp;
+            }
+            // Swap rows in the inverse matrix
+            for (j = 0; j < MATRIX_SIZE; j++)
+            {
+                temp = inverse[i][j];
+                inverse[i][j] = inverse[maxIndex][j];
+                inverse[maxIndex][j] = temp;
+            }
         }
 
-        // Step 2: Perform row operations
+        // Step 3: Multiply top row by a scalar to make leading entry 1
         temp = matrix[i][i];
         for (j = 0; j < MATRIX_SIZE; j++)
         {
@@ -110,6 +118,7 @@ void gaussJordan()
             inverse[i][j] /= temp;
         }
 
+        // Step 4: Perform row operations to make other entries in the column zero
         for (k = 0; k < MATRIX_SIZE; k++)
         {
             if (k != i)
@@ -124,9 +133,6 @@ void gaussJordan()
         }
     }
 }
-
-
-
 
 int scale_factor_calculation(int matrix[MATRIX_SIZE][MATRIX_SIZE])
 {
@@ -160,50 +166,6 @@ void scale_matrix(int matrix[MATRIX_SIZE][MATRIX_SIZE], int scale_factor)
     }
 }
 
-int approximate_norm(int matrix[MATRIX_SIZE][MATRIX_SIZE])
-{
-    // Goal: estimate the condition number without calculating the norm
-    // Approximate the matrix norm by finding the maximum absolute row sum
-
-    int norm = 0;
-    for (int i = 0; i < MATRIX_SIZE; i++)
-    {
-        int row_sum = 0;
-        for (int j = 0; j < MATRIX_SIZE; j++)
-        {
-            if (matrix[i][j] < 0)
-            {
-                // Multiply index by -1 if negative
-                row_sum += (matrix[i][j] * (-1));
-            }
-            else
-            {
-                row_sum += matrix[i][j];
-            }
-        }
-        if (row_sum > norm)
-            norm = row_sum;
-    }
-    return norm;
-}
-
-int compute_condition_num(int matrix[MATRIX_SIZE][MATRIX_SIZE], int inverse[MATRIX_SIZE][MATRIX_SIZE], int scale_factor)
-{
-    // Goal: estimate the condition number without calculating the norm
-    // Approximate the matrix norm by finding the maximum absolute row sum
-    int norm = approximate_norm(matrix);
-    printf("Norm is:%d\n", norm);
-
-    gaussJordan();
-
-    int inverse_norm = approximate_norm(inverse);
-    printf("Inverse norm is:%d\n", inverse_norm);
-
-    int condition_num = norm * inverse_norm;
-
-    return condition_num;
-}
-
 int main()
 {
     int i, j;
@@ -224,10 +186,5 @@ int main()
     printf("Inverse:\n");
     printMatrix(inverse);
 
-    // int condition_number = compute_condition_num(matrix, inverse, scale_factor);
-    // printf("Condition Number: %d\n", condition_number);
-
-    // printf("\nInverse Matrix is:\n");
-    // printMatrix(inverse);
-    // return 0;
+    return 0;
 }
