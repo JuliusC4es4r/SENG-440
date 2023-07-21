@@ -1,129 +1,172 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#define MATRIX_SIZE 6
+#define MATRIX_SIZE 3
 #define MAX_SCALER 65536
 
 //the well-conditioned matrix to be inverted
 // line below for matlab debugging
 // [1,2,1,1,2,1; 5, 2, 7, 1, 1, 3;7, 1, 1, 4, 1, 2;1, 1, 5, 2, 3, 7;1, 2, 5, 2, 2, 1;1, 2, 1, 1, 1, 2]
-float well_conditioned_matrix[MATRIX_SIZE][MATRIX_SIZE] = 
+// float well_conditioned_matrix[MATRIX_SIZE][MATRIX_SIZE] = 
+// {
+//     {1, 2, 1, 1, 2, 1},
+//     {5, 2, 7, 1, 1, 3},
+//     {7, 1, 1, 4, 1, 2},
+//     {1, 1, 5, 2, 3, 7},
+//     {1, 2, 5, 2, 2, 1},
+//     {1, 2, 1, 1, 1, 2}
+// };
+
+// //allocating memory and defining the identity matrix to have row operations completed on it for the inversion
+// float well_conditioned_inversion_result[MATRIX_SIZE][MATRIX_SIZE] = 
+// {
+//     {1, 0, 0, 0, 0, 0},
+//     {0, 1, 0, 0, 0, 0},
+//     {0, 0, 1, 0, 0, 0},
+//     {0, 0, 0, 1, 0, 0},
+//     {0, 0, 0, 0, 1, 0},
+//     {0, 0, 0, 0, 0, 1},
+// };
+
+// int m_well[MATRIX_SIZE][MATRIX_SIZE] = 
+// {
+//     {5, 2, 1, 1, 2, 1},
+//     {5, 1, 7, 1, 1, 3},
+//     {7, 1, 7, 9, 1, 2},
+//     {1, 1, 5, 3, 3, 5},
+//     {1, 2, 5, 2, 2, 1},
+//     {1, 9, 0, 5, 1, 7}
+// };
+
+// int m_well_result[MATRIX_SIZE][MATRIX_SIZE] = 
+// {
+//     {1, 0, 0, 0, 0, 0},
+//     {0, 1, 0, 0, 0, 0},
+//     {0, 0, 1, 0, 0, 0},
+//     {0, 0, 0, 1, 0, 0},
+//     {0, 0, 0, 0, 1, 0},
+//     {0, 0, 0, 0, 0, 1},
+// };
+
+// float m_well_result_float[MATRIX_SIZE][MATRIX_SIZE] = 
+// {
+//     {1, 0, 0, 0, 0, 0},
+//     {0, 1, 0, 0, 0, 0},
+//     {0, 0, 1, 0, 0, 0},
+//     {0, 0, 0, 1, 0, 0},
+//     {0, 0, 0, 0, 1, 0},
+//     {0, 0, 0, 0, 0, 1},
+// };
+
+// int m_ill[MATRIX_SIZE][MATRIX_SIZE] = 
+// {
+//     {5, 5, 1, 1, 2, 1},
+//     {5, 1, 14, 1, 1, 7},
+//     {7, 8, 7, 9, 1, 2},
+//     {1, 1, 5, 3, 3, 5},
+//     {20, 2, 5, 2, 5, 1},
+//     {1, 9, 7, 5, 1, 7},
+// };
+
+// int m_ill_result[MATRIX_SIZE][MATRIX_SIZE] = 
+// {
+//     {1, 0, 0, 0, 0, 0},
+//     {0, 1, 0, 0, 0, 0},
+//     {0, 0, 1, 0, 0, 0},
+//     {0, 0, 0, 1, 0, 0},
+//     {0, 0, 0, 0, 1, 0},
+//     {0, 0, 0, 0, 0, 1},
+// };
+
+// //the ill-conditioned matrix to be inverted
+// float ill_conditioned_matrix[MATRIX_SIZE][MATRIX_SIZE] = 
+// {
+//     {1, 2, 1, 1, 2, 1},
+//     {5, 33, 7, 1, 1, 3},
+//     {7, 1, 1, 4, 1, 2},
+//     {1, 1, 5, 2, 3, 7},
+//     {1, 2, 5, 50, 2, 1},
+//     {1, 20, 1, 1, 1, 2}
+// };
+
+// //creating another matrix for the ill-conditioned result
+// float ill_conditioned_inversion_result[MATRIX_SIZE][MATRIX_SIZE] = 
+// {
+//     {1, 0, 0, 0, 0, 0},
+//     {0, 1, 0, 0, 0, 0},
+//     {0, 0, 1, 0, 0, 0},
+//     {0, 0, 0, 1, 0, 0},
+//     {0, 0, 0, 0, 1, 0},
+//     {0, 0, 0, 0, 0, 1},
+// };
+
+int matrix_exaxmple[3][3] =
 {
-    {1, 2, 1, 1, 2, 1},
-    {5, 2, 7, 1, 1, 3},
-    {7, 1, 1, 4, 1, 2},
-    {1, 1, 5, 2, 3, 7},
-    {1, 2, 5, 2, 2, 1},
-    {1, 2, 1, 1, 1, 2}
+    {-1, 1, 4},
+    {2, 1, 5},
+    {1, 1, 6}
 };
 
-//allocating memory and defining the identity matrix to have row operations completed on it for the inversion
-float well_conditioned_inversion_result[MATRIX_SIZE][MATRIX_SIZE] = 
+int matrix_exaxmple_result[3][3] =
 {
-    {1, 0, 0, 0, 0, 0},
-    {0, 1, 0, 0, 0, 0},
-    {0, 0, 1, 0, 0, 0},
-    {0, 0, 0, 1, 0, 0},
-    {0, 0, 0, 0, 1, 0},
-    {0, 0, 0, 0, 0, 1},
+    {1, 0, 0},
+    {0, 1, 0},
+    {0, 0, 1}
 };
 
-float m_well[MATRIX_SIZE][MATRIX_SIZE] = 
-{
-    {5, 2, 1, 1, 2, 1},
-    {5, 1, 7, 1, 1, 3},
-    {7, 1, 7, 9, 1, 2},
-    {1, 1, 5, 3, 3, 5},
-    {1, 2, 5, 2, 2, 1},
-    {1, 9, 0, 5, 1, 7}
-};
-
-float m_well_result[MATRIX_SIZE][MATRIX_SIZE] = 
-{
-    {1, 0, 0, 0, 0, 0},
-    {0, 1, 0, 0, 0, 0},
-    {0, 0, 1, 0, 0, 0},
-    {0, 0, 0, 1, 0, 0},
-    {0, 0, 0, 0, 1, 0},
-    {0, 0, 0, 0, 0, 1},
-};
-
-float m_ill[MATRIX_SIZE][MATRIX_SIZE] = 
-{
-    {5, 5, 1, 1, 2, 1},
-    {5, 1, 14, 1, 1, 7},
-    {7, 8, 7, 9, 1, 2},
-    {1, 1, 5, 3, 3, 5},
-    {20, 2, 5, 2, 5, 1},
-    {1, 9, 7, 5, 1, 7},
-};
-
-float m_ill_result[MATRIX_SIZE][MATRIX_SIZE] = 
-{
-    {1, 0, 0, 0, 0, 0},
-    {0, 1, 0, 0, 0, 0},
-    {0, 0, 1, 0, 0, 0},
-    {0, 0, 0, 1, 0, 0},
-    {0, 0, 0, 0, 1, 0},
-    {0, 0, 0, 0, 0, 1},
-};
-
-//the ill-conditioned matrix to be inverted
-float ill_conditioned_matrix[MATRIX_SIZE][MATRIX_SIZE] = 
-{
-    {1, 2, 1, 1, 2, 1},
-    {5, 33, 7, 1, 1, 3},
-    {7, 1, 1, 4, 1, 2},
-    {1, 1, 5, 2, 3, 7},
-    {1, 2, 5, 50, 2, 1},
-    {1, 20, 1, 1, 1, 2}
-};
-
-//creating another matrix for the ill-conditioned result
-float ill_conditioned_inversion_result[MATRIX_SIZE][MATRIX_SIZE] = 
-{
-    {1, 0, 0, 0, 0, 0},
-    {0, 1, 0, 0, 0, 0},
-    {0, 0, 1, 0, 0, 0},
-    {0, 0, 0, 1, 0, 0},
-    {0, 0, 0, 0, 1, 0},
-    {0, 0, 0, 0, 0, 1},
-};
-
-void printMatrix(float matrix[MATRIX_SIZE][MATRIX_SIZE]) {
+void printMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
-            printf("%.8f\t", matrix[i][j]);
+            printf("%d\t", matrix[i][j]);
         }
         printf("\n");
     }
 }
 
-void swapRows(float matrix[MATRIX_SIZE][MATRIX_SIZE], int row1, int row2) {
+// void printMatrixFloat(int matrix[MATRIX_SIZE][MATRIX_SIZE], float scale) {
+//     for (int i = 0; i < MATRIX_SIZE; i++) {
+//         for (int j = 0; j < MATRIX_SIZE; j++) {
+//             matrix[i][j]*=scale;
+//             printf("%.4f\t", (float)matrix[i][j]);
+//         }
+//         printf("\n");
+//     }
+// }
+
+
+void swapRows(int matrix[MATRIX_SIZE][MATRIX_SIZE], int row1, int row2) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
-        float temp = matrix[row1][i];
+        int temp = matrix[row1][i];
         matrix[row1][i] = matrix[row2][i];
         matrix[row2][i] = temp;
     }
 }
 
-void scaleRow(float matrix[MATRIX_SIZE][MATRIX_SIZE], int row, float scalar) {
+void scaleRow(int matrix[MATRIX_SIZE][MATRIX_SIZE], int row, int scalar, int scaleFactor) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
-        matrix[row][i] *= scalar;
+        matrix[row][i] = (matrix[row][i]) * scalar;
     }
 }
 
-void addRows(float matrix[MATRIX_SIZE][MATRIX_SIZE], int srcRow, int destRow, float scalar) {
+void addRows(int matrix[MATRIX_SIZE][MATRIX_SIZE], int srcRow, int destRow, int scalar) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
-        matrix[destRow][i] += scalar * matrix[srcRow][i];
+        matrix[destRow][i] += scalar * (matrix[srcRow][i]<<16);
+        matrix[destRow][i] = matrix[destRow][i] >> 16;
+        printf("source row: %d\n", srcRow);
+        printf("dest row: %d\n", destRow);
+        printf("scalar: %d\n", scalar);
     }
 }
 
-void invertMatrix(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[MATRIX_SIZE][MATRIX_SIZE]) {
+void invertMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE], int inverse[MATRIX_SIZE][MATRIX_SIZE], int scale_factor) {
 
+printf("Starting invert matrix\n");
+    printMatrix(matrix);
+
+    // Proceed with matrix inversion
     for (int i = 0; i < MATRIX_SIZE; i++) {
         // If the pivot element is zero, swap rows
-        float pivot = matrix[i][i];
+        int pivot = matrix[i][i];
         if (pivot == 0) {
             int j;
             for (j = i + 1; j < MATRIX_SIZE; j++) {
@@ -137,26 +180,91 @@ void invertMatrix(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[MATRIX_S
                 printf("Matrix is not invertible\n");
                 return;
             }
+            // Update the pivot after swapping rows
+            pivot = matrix[i][i];
         }
 
-        // Scale the pivot row
-        scaleRow(matrix, i, 1.0 / pivot);
-        scaleRow(inverse, i, 1.0 / pivot);
+        printf("After pivoting: \n");
+        printMatrix(matrix);
 
-        // Eliminate other rows
-        for (int j = 0; j < MATRIX_SIZE; j++) {
-            if (j != i) {
-                float factor = matrix[j][i];
-                addRows(matrix, i, j, -factor);
-                addRows(inverse, i, j, -factor);
-            }
-        }
+        // // Divide the pivot row by the pivot element
+        // int scalar = matrix[i][i];
+        // for (int j = 0; j < MATRIX_SIZE; j++) {
+        //     matrix[i][j] /= scalar;
+        //     inverse[i][j] = (inverse[i][j] * scale_factor) / scalar;
+        // }
+
+        // // Eliminate other rows
+        // for (int j = 0; j < MATRIX_SIZE; j++) {
+        //     if (j != i) {
+        //         int factor = matrix[j][i];
+        //         addRows(matrix, i, j, -factor);
+        //         addRows(inverse, i, j, -factor);
+        //     }
+        // }
     }
 }
 
-float scale_factor_calculation(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
-    float scale_factor = 0;
-    float max = 0;
+int findGreatestColumnVal(int matrix[MATRIX_SIZE][MATRIX_SIZE], int column){
+    int greatestInColumn = matrix[0][column];
+    int greatestIndex = 0;
+    for(int i = 1; i < MATRIX_SIZE; i++){
+        if(matrix[i][column] > greatestInColumn){
+            greatestInColumn = matrix[i][column];
+            greatestIndex = i;
+        }
+        printf(" %d\n", greatestInColumn);
+    }
+    return greatestIndex;
+}
+
+int findScalar(int matrix[MATRIX_SIZE][MATRIX_SIZE], int row, int column){
+    printf("Val: %d\n",matrix[row][column]);
+    return (matrix[row][column] << 16)/matrix[0][0];
+}
+
+void gaussJordan(int matrix[MATRIX_SIZE][MATRIX_SIZE], int inverse[MATRIX_SIZE][MATRIX_SIZE]) {
+
+    int pivot = matrix[0][0];
+    printMatrix(matrix_exaxmple);
+    for(int i = 0; i < MATRIX_SIZE; i++) // i is the current row
+    {
+        pivot = matrix[i][i];
+        printf("Scale Factor: %d\n", MAX_SCALER/pivot);
+        scaleRow(matrix_exaxmple, i, MAX_SCALER/pivot, MAX_SCALER);
+        matrix[i][i] = MAX_SCALER;
+        printf("Current Pivot at row %d: %d\n", i, pivot);
+    }
+    printf("Before Adding Rows\n");
+    printMatrix(matrix_exaxmple);
+
+        for(int i = 0; i < 1; i++) // i is the current row
+    {
+        pivot = matrix[i][i];
+        printf("Current Pivot at row %d: %d\n", i, pivot);
+        //printf("%d\n", matrix[i][1]);
+        addRows(matrix_exaxmple, 0, 1, -matrix[1][0]/pivot);
+        addRows(matrix_exaxmple, 0, 2, -matrix[2][0]/pivot);
+        // for(int j = 0; j < 1; j++)
+        // {
+        //     if(j != i)
+        //     {
+        //         printf("Matrix/pivot = %d\n", matrix[j][i]/pivot);
+        //         printf("Matrix: %d\n", matrix[j][i]);
+        //         addRows(matrix_exaxmple, i, j, -matrix[j][i]/pivot);
+        //     }
+        // }
+    }
+
+    printf("After Adding Rows\n");
+    printMatrix(matrix_exaxmple);
+}
+
+
+
+int scale_factor_calculation(int matrix[MATRIX_SIZE][MATRIX_SIZE]){
+    int scale_factor = 0;
+    int max = 0;
 
     //Loop through matrix to find the maximum element
     for(int i = 0; i < MATRIX_SIZE; i++){
@@ -169,28 +277,28 @@ float scale_factor_calculation(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
     return scale_factor;
 }
 
-float scale_matrix(float inverted_matrix[MATRIX_SIZE][MATRIX_SIZE], int scale_factor){
+void scale_matrix(int matrix[MATRIX_SIZE][MATRIX_SIZE], int scale_factor){
     //Scale each element in the matrix
     for(int i = 0; i < MATRIX_SIZE; i++){
         for(int j = 0; j < MATRIX_SIZE; j++){
-            inverted_matrix[i][j]*=scale_factor;
+            matrix[i][j] *= scale_factor;
         }
     }
 }
 
-float approximate_norm(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
+int approximate_norm(int matrix[MATRIX_SIZE][MATRIX_SIZE]){
     //Goal: estimate the condition number without calculating the norm
-    //Approximate the matrix norm by find the maximum absolute row sum
+    //Approximate the matrix norm by finding the maximum absolute row sum
 
-    float norm = 0;
+    int norm = 0;
     for(int i = 0; i < MATRIX_SIZE; i++){
-        float row_sum = 0;
+        int row_sum = 0;
         for(int j = 0; j < MATRIX_SIZE; j++){
             if(matrix[i][j] < 0){
                 //Multiply index by -1 if negative
-                row_sum+=(matrix[i][j]*(-1));
+                row_sum += (matrix[i][j] * (-1));
             }else{
-                row_sum+=matrix[i][j];
+                row_sum += matrix[i][j];
             }
         }
         if(row_sum > norm) norm = row_sum;
@@ -198,40 +306,43 @@ float approximate_norm(float matrix[MATRIX_SIZE][MATRIX_SIZE]){
     return norm;
 }
 
-float compute_condition_num(float matrix[MATRIX_SIZE][MATRIX_SIZE], float inverse[MATRIX_SIZE][MATRIX_SIZE]){
+int compute_condition_num(int matrix[MATRIX_SIZE][MATRIX_SIZE], int inverse[MATRIX_SIZE][MATRIX_SIZE], int scale_factor){
     //Goal: estimate the condition number without calculating the norm
-    //Approximate the matrix norm by find the maximum absolute row sum
-    float norm = approximate_norm(matrix);
-    //printf("Norm is:%f\n", norm);
+    //Approximate the matrix norm by finding the maximum absolute row sum
+    int norm = approximate_norm(matrix);
+    printf("Norm is:%d\n", norm);
 
-    invertMatrix(matrix, inverse);
+    invertMatrix(matrix, inverse, scale_factor);
 
+    printMatrix(inverse);
 
-    float inverse_norm = approximate_norm(inverse);
-    //printf("Inverse norm is:%f\n", inverse_norm);
+    int inverse_norm = approximate_norm(inverse);
+    printf("Inverse norm is:%d\n", inverse_norm);
 
-    float condition_num = norm*inverse_norm;
+    int condition_num = norm * inverse_norm;
     
     return condition_num;
 }
 
 int start_process(){
-    //printMatrix(m_well);
-    float scale_factor = scale_factor_calculation(m_well);
-    //printf("Scale factor: %f\n", scale_factor);
-    float condition_number = compute_condition_num(m_well, m_well_result);
-    //printf("Condition Number: %.8f\n", condition_number);
-    scale_matrix(m_well, scale_factor);
+    // printMatrix(m_well);
+    // int scale_factor = scale_factor_calculation(m_well);
+    // printf("Scale factor: %d\n", scale_factor);
+    // scale_matrix(m_well, scale_factor);
+    // int condition_number = compute_condition_num(m_well, m_well_result, scale_factor);
+    // printf("Condition Number: %d\n", condition_number);
     //printMatrix(m_well_result);
+    //printMatrixFloat(m_well_result, 1/scale_factor);
 
-    //printf("\n***************************************************\n");
+    // invertMatrix(matrix_exaxmple, matrix_exaxmple_result, 1);
+    gaussJordan(matrix_exaxmple, matrix_exaxmple_result);
 
     //printMatrix(m_ill);
-    float scale_factor_ill = scale_factor_calculation(m_ill);
-    //printf("Scale factor: %f\n", scale_factor_ill);
-    float condition_number_ill = compute_condition_num(m_ill, m_ill_result);
-    //printf("Condition Number: %.8f\n", condition_number_ill);
-    scale_matrix(m_ill, scale_factor_ill);
+    //int scale_factor_ill = scale_factor_calculation(m_ill);
+    //printf("Scale factor: %d\n", scale_factor_ill);
+    //int condition_number_ill = compute_condition_num(m_ill, m_ill_result);
+    //printf("Condition Number: %d\n", condition_number_ill);
+    //scale_matrix(m_ill, scale_factor_ill);
     //printMatrix(m_ill_result);
     
     return 0;
@@ -239,30 +350,30 @@ int start_process(){
 
 int main() {
 
-    start_process();
-
     double runtime = 0;
 
-    for(int i = 0; i < 100; i++){
+    start_process();
 
-        struct timeval start, end;
-        double elapsed_time;
+    // for(int i = 0; i < 100; i++){
 
-        // Timing the runtime of your program
-        gettimeofday(&start, NULL);
+    //     struct timeval start, end;
+    //     double elapsed_time;
 
-        start_process(); // Call your program
+    //     // Timing the runtime of your program
+    //     gettimeofday(&start, NULL);
 
-        gettimeofday(&end, NULL);
-        elapsed_time = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);
+    //     start_process(); // Call your program
 
-        runtime+=elapsed_time;
+    //     gettimeofday(&end, NULL);
+    //     elapsed_time = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);
 
-        //printf("Runtime: %.2f microseconds\n", elapsed_time);
+    //     runtime += elapsed_time;
 
-    }
+    //     //printf("Runtime: %.2f microseconds\n", elapsed_time);
 
-    printf("Run time avg: %.2f\n", runtime/100);
+    // }
+
+    //printf("Run time avg: %.2f\n", runtime/100);
 
     return 0;
 }
