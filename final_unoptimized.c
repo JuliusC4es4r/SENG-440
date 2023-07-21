@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sys/time.h>
 
 #define MatrixSize 6
 #define MaxScale 65536 // 2^16
@@ -43,14 +44,84 @@ int illConditionedInversionResult[MatrixSize][MatrixSize] =
     {0, 0, 0, 0, 0, 1},
 };
 
-// Function declarations
-void invertMatrix(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSize], int size, int scaleFactor);
-void printMatrix(int (*matrix)[MatrixSize], int matrixSize);
-int scaleUp(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSize], int matrixSize);
-int calculateConditionNumber(int (*matrix)[MatrixSize], int matrixSize);
-void swapRows(int matrix[MatrixSize][MatrixSize], int row1, int row2);
-void scaleElement(int matrix[MatrixSize][MatrixSize], int row, int column, int scalar);
-void addElement(int matrix[MatrixSize][MatrixSize], int srcRow, int destRow, int column, int scalar);
+void printMatrix(int (*matrix)[MatrixSize], int matrixSize)
+{
+    int i, j;
+
+    for (i = 0; i < matrixSize; i++)
+    {
+        for (j = 0; j < matrixSize; j++)
+        {
+            printf("%12d ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+int scaleFactorCalculation(int matrix[MatrixSize][MatrixSize]){
+    int scale_factor = 0;
+    int max = 0;
+
+    //Loop through matrix to find the maximum element
+    for(int i = 0; i < MatrixSize; i++){
+        for(int j = 0; j < MatrixSize; j++){
+            if (matrix[i][j] > max) max = matrix[i][j];
+        }
+    }
+    
+    return MaxScale/max;
+}
+
+void scaleMatrix(int matrix[MatrixSize][MatrixSize], int scale_factor){
+    //Scale each element in the matrix
+    for(int i = 0; i < MatrixSize; i++){
+        for(int j = 0; j < MatrixSize; j++){
+            matrix[i][j] *= scale_factor;
+        }
+    }
+}
+
+float approximateNorm(int matrix[MatrixSize][MatrixSize]){
+    //Goal: estimate the condition number without calculating the norm
+    //Approximate the matrix norm by finding the maximum absolute row sum
+
+    int norm = 0;
+    for(int i = 0; i < MatrixSize; i++){
+        int row_sum = 0;
+        for(int j = 0; j < MatrixSize; j++){
+            if(matrix[i][j] < 0){
+                //Multiply index by -1 if negative
+                row_sum += (matrix[i][j] * (-1));
+            }else{
+                row_sum += matrix[i][j];
+            }
+        }
+        if(row_sum > norm) norm = row_sum;
+    }
+    return norm;
+}
+
+void swapRows(int matrix[MatrixSize][MatrixSize], int row1, int row2)
+{
+    for (int i = 0; i < MatrixSize; i++)
+    {
+        int temp = matrix[row1][i];
+        matrix[row1][i] = matrix[row2][i];
+        matrix[row2][i] = temp;
+    }
+}
+
+void scaleElement(int matrix[MatrixSize][MatrixSize], int row, int column, int scalar)
+{
+        matrix[row][column] = (matrix[row][column]) / scalar;
+}
+
+void addElement(int matrix[MatrixSize][MatrixSize], int srcRow, int destRow, int column, int scalar)
+{
+    matrix[destRow][column] += matrix[srcRow][column] * scalar;
+}
+
 
 void invertMatrix(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSize], int size, int scaleFactor)
 {
@@ -122,87 +193,7 @@ void invertMatrix(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSize], 
     }
 }
 
-void printMatrix(int (*matrix)[MatrixSize], int matrixSize)
-{
-    int i, j;
-
-    for (i = 0; i < matrixSize; i++)
-    {
-        for (j = 0; j < matrixSize; j++)
-        {
-            printf("%12d ", matrix[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-int scale_factor_calculation(int matrix[MatrixSize][MatrixSize]){
-    int scale_factor = 0;
-    int max = 0;
-
-    //Loop through matrix to find the maximum element
-    for(int i = 0; i < MatrixSize; i++){
-        for(int j = 0; j < MatrixSize; j++){
-            if (matrix[i][j] > max) max = matrix[i][j];
-        }
-    }
-    
-    return MaxScale/max;
-}
-
-void scale_matrix(int matrix[MatrixSize][MatrixSize], int scale_factor){
-    //Scale each element in the matrix
-    for(int i = 0; i < MatrixSize; i++){
-        for(int j = 0; j < MatrixSize; j++){
-            matrix[i][j] *= scale_factor;
-        }
-    }
-}
-
-float approximate_norm(int matrix[MatrixSize][MatrixSize]){
-    //Goal: estimate the condition number without calculating the norm
-    //Approximate the matrix norm by finding the maximum absolute row sum
-
-    int norm = 0;
-    for(int i = 0; i < MatrixSize; i++){
-        int row_sum = 0;
-        for(int j = 0; j < MatrixSize; j++){
-            if(matrix[i][j] < 0){
-                //Multiply index by -1 if negative
-                row_sum += (matrix[i][j] * (-1));
-            }else{
-                row_sum += matrix[i][j];
-            }
-        }
-        if(row_sum > norm) norm = row_sum;
-    }
-    return norm;
-}
-
-void swapRows(int matrix[MatrixSize][MatrixSize], int row1, int row2)
-{
-    for (int i = 0; i < MatrixSize; i++)
-    {
-        int temp = matrix[row1][i];
-        matrix[row1][i] = matrix[row2][i];
-        matrix[row2][i] = temp;
-    }
-}
-
-void scaleElement(int matrix[MatrixSize][MatrixSize], int row, int column, int scalar)
-{
-        matrix[row][column] = (matrix[row][column]) / scalar;
-}
-
-void addElement(int matrix[MatrixSize][MatrixSize], int srcRow, int destRow, int column, int scalar)
-{
-    matrix[destRow][column] += matrix[srcRow][column] * scalar;
-}
-
-
-int main(void)
-{
+void startProcess(){
     int scaleFactor;
     float conditionNumber, matrixNorm, inverseNorm;
 
@@ -210,21 +201,21 @@ int main(void)
     printMatrix(wellConditionedMatrix, MatrixSize);
 
     // scale factor calculations
-    scaleFactor = scale_factor_calculation(wellConditionedMatrix);
+    scaleFactor = scaleFactorCalculation(wellConditionedMatrix);
     printf("Well Conditioned Matrix Scale Factor: %d \n", scaleFactor);
 
     // finding matrix norm
-    matrixNorm = approximate_norm(wellConditionedMatrix);
+    matrixNorm = approximateNorm(wellConditionedMatrix);
     printf("Matrix Norm: %f \n", matrixNorm);
 
     // scaling inverted matrix result with the scale factor
-    scale_matrix(wellConditionedInversionResult, scaleFactor);
+    scaleMatrix(wellConditionedInversionResult, scaleFactor);
 
     // inverting matrices
     invertMatrix(wellConditionedMatrix, wellConditionedInversionResult, MatrixSize, scaleFactor);
 
     // calculating inverse norm
-    inverseNorm = approximate_norm(wellConditionedInversionResult);
+    inverseNorm = approximateNorm(wellConditionedInversionResult);
     printf("Inverse Matrix Norm: %f \n", inverseNorm/MaxScale);
 
     // calculating condition number
@@ -236,6 +227,32 @@ int main(void)
 
     printf("\nResulting Inverse Matrix: \n");
     printMatrix(wellConditionedInversionResult, MatrixSize);
+}
+
+
+int main(void)
+{
+    double runtime = 0;
+
+   startProcess();
+
+    // for(int i = 0; i < 100; i++){
+
+    //     struct timeval start, end;
+    //     double elapsed_time;
+
+    //     // Timing the runtime of your program
+    //     gettimeofday(&start, NULL);
+
+    //     startProcess(); // Call your program
+
+    //     gettimeofday(&end, NULL);
+    //     elapsed_time = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);
+
+    //     runtime += elapsed_time;
+    // }
+
+    // printf("Run time avg: %.2f\n", runtime/100);
 
     return 0;
 }
