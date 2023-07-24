@@ -6,12 +6,12 @@
 
 int wellConditionedMatrix[MatrixSize][MatrixSize] =
 {
-    {1, 2, 1, 1, 2, 1},
-    {5, 2, 7, 1, 1, 3},
-    {7, 1, 1, 4, 1, 2},
-    {1, 1, 5, 2, 3, 7},
-    {1, 2, 5, 2, 2, 1},
-    {1, 2, 1, 1, 1, 2}
+    {5, 2, 1, 1, 2, 1},
+    {5, 1, 7, 5, 9, 3},
+    {7, 1, 1, 1, 1, 2},
+    {1, 1, 4, 1, 3, 2},
+    {1, 2, 8, 2, 2, 1},
+    {1, 9, 0, 5, 1, 3}
 };
 
 int wellConditionedInversionResult[MatrixSize][MatrixSize] =
