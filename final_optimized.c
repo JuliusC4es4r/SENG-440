@@ -44,9 +44,8 @@ int illConditionedInversionResult[MatrixSize][MatrixSize] =
     {0, 0, 0, 0, 0, 1},
 };
 
-void printMatrix(int (*matrix)[MatrixSize], int matrixSize)
-{
-    int i, j;
+void printMatrix(int (*matrix)[MatrixSize], int matrixSize){
+    register int i, j;
 
     for(int i = 0; i < MatrixSize; i++){
         for(int j = 0; j < MatrixSize; j++){
@@ -58,12 +57,12 @@ void printMatrix(int (*matrix)[MatrixSize], int matrixSize)
 }
 
 int scaleFactorCalculation(int matrix[MatrixSize][MatrixSize]){
-    int scale_factor = 0;
-    int max = matrix[0][0];
+    register int max = matrix[0][0];
+    register int i, j;
 
     //Loop through matrix to find the maximum element
-    for(int i = 0; i < MatrixSize; i+=2){
-        for(int j = 1; j < MatrixSize; j+=2){
+    for(i = 0; i < MatrixSize; i+=2){
+        for(j = 1; j < MatrixSize-1; j+=2){
             if (matrix[i][j] > max) max = matrix[i][j];
             if (matrix[i][j+1] > max) max = matrix[i][j+1];
 
@@ -74,6 +73,7 @@ int scaleFactorCalculation(int matrix[MatrixSize][MatrixSize]){
     
     return MaxScale/max;
 }
+
 
 void scaleMatrix(int matrix[MatrixSize][MatrixSize], int scale_factor){
     //Scale each element in the matrix
@@ -92,7 +92,7 @@ float approximateNorm(int matrix[MatrixSize][MatrixSize]){
     //Goal: estimate the condition number without calculating the norm
     //Approximate the matrix norm by finding the maximum absolute row sum
 
-    int norm = 0;
+    register int norm = 0;
     for(int i = 0; i < MatrixSize; i+=2){
         int row_sum = 0;
         for(int j = 0; j < MatrixSize; j+=2){
@@ -123,9 +123,9 @@ float approximateNorm(int matrix[MatrixSize][MatrixSize]){
     return norm;
 }
 
-void swapRows(int matrix[MatrixSize][MatrixSize], int row1, int row2)
-{
-    for (int i = 0; i < MatrixSize; i+=3)
+void swapRows(int matrix[MatrixSize][MatrixSize], int row1, int row2){
+    register int i;
+    for (i = 0; i < MatrixSize; i+=2)
     {
         int temp = matrix[row1][i];
         matrix[row1][i] = matrix[row2][i];
@@ -134,25 +134,19 @@ void swapRows(int matrix[MatrixSize][MatrixSize], int row1, int row2)
         temp = matrix[row1][i+1];
         matrix[row1][i+1] = matrix[row2][i+1];
         matrix[row2][i+1] = temp;
-
-        temp = matrix[row1][i+2];
-        matrix[row1][i+2] = matrix[row2][i+2];
-        matrix[row2][i+2] = temp;
     }
 }
 
-void scaleElement(int matrix[MatrixSize][MatrixSize], int row, int column, int scalar)
-{
+void scaleElement(int matrix[MatrixSize][MatrixSize], int row, int column, int scalar){
     matrix[row][column] = (matrix[row][column]) / scalar;
 }
 
-void addElement(int matrix[MatrixSize][MatrixSize], int srcRow, int destRow, int column, int scalar)
-{
+void addElement(int matrix[MatrixSize][MatrixSize], int srcRow, int destRow, int column, int scalar){
     matrix[destRow][column] += matrix[srcRow][column] * scalar;
 }
 
 void inversionProcess(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSize], int size, int scaleFactor, int colMax, int colMaxIndex, int i){
-    int j, k, scalar;
+    register int j, k, scalar;
     // this loop finds the rows to be swapped to get the next pivot
         for (k = i; k < size; k+=3)
         {
@@ -182,7 +176,12 @@ void inversionProcess(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSiz
         if (colMaxIndex != i)
         {
             // swap rows to move the new pivot to the right position for both matrices
-            for (k = 0; k < size; k+=2)
+            swapRows(matrix, i, 0);
+            swapRows(invertedMatrix, i, 0);
+
+            swapRows(matrix, i, 1);
+            swapRows(invertedMatrix, i, 1);
+            for (k = 2; k < size; k+=2)
             {
                 swapRows(matrix, i, k);
                 swapRows(invertedMatrix, i, k);
@@ -203,16 +202,18 @@ void inversionProcess(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSiz
         }
 
         // scale the rows for both the matrix and inverse matrix to make the pivot become 1
-        for (j = 0; j < size; j+=3)
+        scaleElement(matrix, i, 0, scalar);
+        scaleElement(invertedMatrix, i, 0, scalar);
+
+        scaleElement(matrix, i, 1, scalar);
+        scaleElement(invertedMatrix, i, 1, scalar);
+        for (j = 2; j < size; j+=2)
         {
             scaleElement(matrix, i, j, scalar);
             scaleElement(invertedMatrix, i, j, scalar);
 
             scaleElement(matrix, i, j+1, scalar);
             scaleElement(invertedMatrix, i, j+1, scalar);
-
-            scaleElement(matrix, i, j+2, scalar);
-            scaleElement(invertedMatrix, i, j+2, scalar);
         }
 
         // subtracting the scaled pivot row from the remaining rows while stepping through rows
@@ -221,16 +222,18 @@ void inversionProcess(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSiz
             scalar = matrix[k][i];
             if (k != i)
             {
-                for (j = 0; j < size; j+=3)
+                addElement(matrix, i, k, 0, -scalar);
+                addElement(invertedMatrix, i, k, 0, -scalar);
+
+                addElement(matrix, i, k, 1, -scalar);
+                addElement(invertedMatrix, i, k, 1, -scalar);
+                for (j = 2; j < size; j+=2)
                 {
                     addElement(matrix, i, k, j, -scalar);
                     addElement(invertedMatrix, i, k, j, -scalar);
 
                     addElement(matrix, i, k, j+1, -scalar);
                     addElement(invertedMatrix, i, k, j+1, -scalar);
-
-                    addElement(matrix, i, k, j+2, -scalar);
-                    addElement(invertedMatrix, i, k, j+2, -scalar);
                 }
             }
         }
@@ -239,10 +242,10 @@ void inversionProcess(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSiz
 
 void invertMatrix(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSize], int size, int scaleFactor)
 {
-    int i, scalar;
-    int colMax, colMaxIndex;
+    register int i, scalar;
+    register int colMax, colMaxIndex;
 
-    for (i = 0; i < size; i+=3)
+    for (i = 0; i < size; i+=2)
     {
         colMax = 0;
         colMaxIndex = i;
@@ -251,26 +254,23 @@ void invertMatrix(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSize], 
 
         colMaxIndex = i+1;
         inversionProcess(matrix, invertedMatrix, size, scalar, colMax, colMaxIndex, i+1);
-
-        colMaxIndex = i+2;
-        inversionProcess(matrix, invertedMatrix, size, scalar, colMax, colMaxIndex, i+2);
     }
 }
 
 void startProcess(){
-    int scaleFactor;
+    register int scaleFactor;
     float conditionNumber, matrixNorm, inverseNorm;
 
-    printf("Original Well Conditioned Matrix: \n");
-    printMatrix(wellConditionedMatrix, MatrixSize);
+    // printf("Original Well Conditioned Matrix: \n");
+    // printMatrix(wellConditionedMatrix, MatrixSize);
 
     // scale factor calculations
     scaleFactor = scaleFactorCalculation(wellConditionedMatrix);
-    printf("Well Conditioned Matrix Scale Factor: %d \n", scaleFactor);
+    // printf("Well Conditioned Matrix Scale Factor: %d \n", scaleFactor);
 
     // finding matrix norm
     matrixNorm = approximateNorm(wellConditionedMatrix);
-    printf("Matrix Norm: %f \n", matrixNorm);
+    // printf("Matrix Norm: %f \n", matrixNorm);
 
     // scaling inverted matrix result with the scale factor
     scaleMatrix(wellConditionedInversionResult, scaleFactor);
@@ -280,17 +280,17 @@ void startProcess(){
 
     // calculating inverse norm
     inverseNorm = approximateNorm(wellConditionedInversionResult);
-    printf("Inverse Matrix Norm: %f \n", inverseNorm/MaxScale);
+    // printf("Inverse Matrix Norm: %f \n", inverseNorm/MaxScale);
 
     // calculating condition number
     conditionNumber = (inverseNorm * matrixNorm)/MaxScale;
-    printf("Condition Number: %f \n", conditionNumber);
+    // printf("Condition Number: %f \n", conditionNumber);
 
-    printf("\nOriginal Well Conditioned Matrix (After Inversion): \n");
-    printMatrix(wellConditionedMatrix, MatrixSize);
+    // printf("\nOriginal Well Conditioned Matrix (After Inversion): \n");
+    // printMatrix(wellConditionedMatrix, MatrixSize);
 
-    printf("\nResulting Inverse Matrix: \n");
-    printMatrix(wellConditionedInversionResult, MatrixSize);
+    // printf("\nResulting Inverse Matrix: \n");
+    // printMatrix(wellConditionedInversionResult, MatrixSize);
 }
 
 
@@ -298,25 +298,25 @@ int main(void)
 {
     double runtime = 0;
 
-   startProcess();
+   //startProcess();
 
-    // for(int i = 0; i < 100; i++){
+    for(int i = 0; i < 100; i++){
 
-    //     struct timeval start, end;
-    //     double elapsed_time;
+        struct timeval start, end;
+        double elapsed_time;
 
-    //     // Timing the runtime of your program
-    //     gettimeofday(&start, NULL);
+        // Timing the runtime of your program
+        gettimeofday(&start, NULL);
 
-    //     startProcess(); // Call your program
+        startProcess(); // Call your program
 
-    //     gettimeofday(&end, NULL);
-    //     elapsed_time = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);
+        gettimeofday(&end, NULL);
+        elapsed_time = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);
 
-    //     runtime += elapsed_time;
-    // }
+        runtime += elapsed_time;
+    }
 
-    // printf("Run time avg: %.2f\n", runtime/100);
+    printf("Run time avg: %.2f\n", runtime/100);
 
     return 0;
 }
