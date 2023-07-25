@@ -4,6 +4,8 @@
 #define MatrixSize 6
 #define MaxScale 65536 // 2^16
 
+int numberOfMultiplications = 0;
+
 int wellConditionedMatrix[MatrixSize][MatrixSize] =
 {
     {5, 2, 1, 1, 2, 1},
@@ -84,6 +86,7 @@ void scaleMatrix(int matrix[MatrixSize][MatrixSize], int scale_factor){
 
             matrix[i+1][j] *= scale_factor;
             matrix[i+1][j+1] *= scale_factor;
+            numberOfMultiplications = numberOfMultiplications + 4;
         }
     }
 }
@@ -143,6 +146,7 @@ void scaleElement(int matrix[MatrixSize][MatrixSize], int row, int column, int s
 
 void addElement(int matrix[MatrixSize][MatrixSize], int srcRow, int destRow, int column, int scalar){
     matrix[destRow][column] += matrix[srcRow][column] * scalar;
+    numberOfMultiplications++;
 }
 
 void inversionProcess(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSize], int size, int scaleFactor, int colMax, int colMaxIndex, int i){
@@ -317,6 +321,7 @@ int main(void)
     }
 
     printf("Run time avg: %.2f\n", runtime/100);
+    printf("Number of Multiply Operations: %d", numberOfMultiplications/100);
 
     return 0;
 }
