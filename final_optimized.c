@@ -259,7 +259,7 @@ void invertMatrix(int (*matrix)[MatrixSize], int (*invertedMatrix)[MatrixSize], 
 
 void startProcess(){
     register int scaleFactor;
-    float conditionNumber, matrixNorm, inverseNorm;
+    register float conditionNumber, matrixNorm, inverseNorm;
 
     // printf("Original Well Conditioned Matrix: \n");
     // printMatrix(wellConditionedMatrix, MatrixSize);
