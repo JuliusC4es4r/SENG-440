@@ -4,6 +4,8 @@
 #define MatrixSize 6
 #define MaxScale 65536 // 2^16
 
+int numberOfMultiplications = 0;
+
 int wellConditionedMatrix[MatrixSize][MatrixSize] =
 {
     {5, 2, 1, 1, 2, 1},
@@ -78,6 +80,7 @@ void scaleMatrix(int matrix[MatrixSize][MatrixSize], int scale_factor){
     for(int i = 0; i < MatrixSize; i++){
         for(int j = 0; j < MatrixSize; j++){
             matrix[i][j] *= scale_factor;
+            numberOfMultiplications++;
         }
     }
 }
@@ -93,6 +96,7 @@ float approximateNorm(int matrix[MatrixSize][MatrixSize]){
             if(matrix[i][j] < 0){
                 //Multiply index by -1 if negative
                 row_sum += (matrix[i][j] * (-1));
+                numberOfMultiplications++;
             }else{
                 row_sum += matrix[i][j];
             }
@@ -120,6 +124,7 @@ void scaleElement(int matrix[MatrixSize][MatrixSize], int row, int column, int s
 void addElement(int matrix[MatrixSize][MatrixSize], int srcRow, int destRow, int column, int scalar)
 {
     matrix[destRow][column] += matrix[srcRow][column] * scalar;
+    numberOfMultiplications++;;
 }
 
 
@@ -257,6 +262,7 @@ int main(void)
     // }
 
     printf("Run time avg: %.2f\n", runtime/100);
+    printf("Number of Multiply Operations: %d", numberOfMultiplications/100);
 
     return 0;
 }

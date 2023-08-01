@@ -114,7 +114,7 @@ int sc_main(int argc, char* argv[]) {
     sc_signal<sc_lv<16>> output;
 
     // Create the clock
-    sc_clock clk_tb("clk_tb", 1.5, SC_NS); // ~700MHz clock which is Raspberry Pi 3B+ worst case clock speed
+    sc_clock clk_tb("clk_tb", 0.7, SC_NS); // ~1.4Ghz clock which is Raspberry Pi 3B+ worst case clock speed
 
     // Connect the ports
     tb.clk_tb(clk_tb);
